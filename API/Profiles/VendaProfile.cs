@@ -4,9 +4,9 @@ using Domain.Entities;
 
 namespace API.Profiles
 {
-    public class BoardProfile : Profile
+    public class VendaProfile : Profile
     {
-        public BoardProfile()
+        public VendaProfile()
         {
             CreateMap<Venda, RegistrarVendaDto>();
         }
