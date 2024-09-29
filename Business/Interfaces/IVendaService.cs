@@ -9,10 +9,10 @@ namespace Business.Interfaces
 {
     public interface IVendaService
     {
-        Venda CriarVenda(Guid clienteId, string nomeCliente, Guid filialId, string nomeFilial, List<ItemVenda> itensDto);
-        Venda AtualizarVenda(Guid vendaId, List<ItemVenda> novosItensDto);
-        void CancelarVenda(Guid vendaId);
-        IEnumerable<Venda> ObterTodasVendas();
-        Venda? ObterVendaPorId(Guid vendaId);
+        Task<Venda> RegistrarVenda(Guid clienteId, string nomeCliente, Guid filialId, string nomeFilial, List<ItemVenda> itensDto);
+        Task<Venda> AtualizarVenda(Guid vendaId, List<ItemVenda> novosItensDto);
+        Task CancelarVenda(Guid vendaId);
+        Task<IEnumerable<Venda>> ObterTodasVendas();
+        Task<Venda>? ObterVendaPorId(Guid vendaId);
     }
 }

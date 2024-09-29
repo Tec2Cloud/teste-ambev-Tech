@@ -1,45 +1,47 @@
-﻿using Data.Interfaces;
+﻿using Data.Context;
+using Data.Interfaces;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories
 {
     public class VendaRepository : IVendaRepository
     {
-        private readonly List<Venda> _vendas = new List<Venda>();
+        protected readonly VendasDbContext Context;
+        protected readonly DbSet<Venda> Vendas;
 
-        public Venda? ObterPorId(Guid id)
+        public VendaRepository(VendasDbContext context)
         {
-            return _vendas.FirstOrDefault(v => v.Id == id);
+            Context = context;
+            Vendas = Context.Set<Venda>();
+        }
+        public async Task<Venda> ObterPorIdAsync(Guid id)
+        {
+            return await Vendas.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
         }
 
-        public IEnumerable<Venda> ObterTodas()
+        public async Task<IEnumerable<Venda>> ObterTodasAsync()
         {
-            return _vendas;
+            return await Vendas.AsNoTracking().ToListAsync();
         }
 
-        public void Adicionar(Venda venda)
+        public async Task<Guid> RegistrarAsync(Venda venda)
         {
-            _vendas.Add(venda);
+            await Vendas.AddAsync(venda);
+            await Context.SaveChangesAsync();
+            return venda.Id;
         }
 
-        public void Atualizar(Venda venda)
+        public async Task AtualizarAsync(Venda venda)
         {
-            var vendaExistente = ObterPorId(venda.Id);
-            if (vendaExistente != null)
-            {
-                _vendas.Remove(vendaExistente);
-                _vendas.Add(venda);
-            }
+            Vendas.Update(venda);
+            await Context.SaveChangesAsync();
         }
 
-        public void Remover(Venda venda)
+        public async Task CancelarAsync(Venda venda)
         {
-            _vendas.Remove(venda);
+            Vendas.Remove(venda);
+            await Context.SaveChangesAsync();
         }
     }
 }

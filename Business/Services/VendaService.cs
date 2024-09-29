@@ -13,7 +13,7 @@ namespace Business.Services
             _vendaRepository = vendaRepository;
         }
 
-        public Venda CriarVenda(Guid clienteId, string nomeCliente, Guid filialId, string nomeFilial, List<ItemVenda> itensDto)
+        public async Task<Venda> RegistrarVenda(Guid clienteId, string nomeCliente, Guid filialId, string nomeFilial, List<ItemVenda> itensDto)
         {
             var venda = new Venda(clienteId, nomeCliente, filialId, nomeFilial);
 
@@ -22,14 +22,14 @@ namespace Business.Services
                 venda.AdicionarItem(itemDto.ProdutoId, itemDto.NomeProduto, itemDto.ValorUnitario, itemDto.Quantidade, itemDto.Desconto);
             }
 
-            _vendaRepository.Adicionar(venda);
+            await _vendaRepository.RegistrarAsync(venda);
 
             return venda;
         }
 
-    public Venda AtualizarVenda(Guid vendaId, List<ItemVenda> novosItensDto)
+    public async Task<Venda> AtualizarVenda(Guid vendaId, List<ItemVenda> novosItensDto)
     {
-        var venda = _vendaRepository.ObterPorId(vendaId);
+        var venda = await _vendaRepository.ObterPorIdAsync(vendaId);
         if (venda == null)
             throw new Exception("Venda não encontrada.");
 
@@ -42,30 +42,30 @@ namespace Business.Services
 
         venda.RecalcularValorTotal();
 
-        _vendaRepository.Atualizar(venda);
+        await _vendaRepository.AtualizarAsync(venda);
 
         return venda;
     }
 
-    public void CancelarVenda(Guid vendaId)
+    public async Task CancelarVenda(Guid vendaId)
         {
-            var venda = _vendaRepository.ObterPorId(vendaId);
+            var venda = await _vendaRepository.ObterPorIdAsync(vendaId);
             if (venda == null)
                 throw new Exception("Venda não encontrada.");
 
             venda.CancelarVenda();
 
-            _vendaRepository.Atualizar(venda);
+            await _vendaRepository.AtualizarAsync(venda);
         }
 
-        public IEnumerable<Venda> ObterTodasVendas()
+        public async Task<IEnumerable<Venda>> ObterTodasVendas()
         {
-            return _vendaRepository.ObterTodas();
+            return await _vendaRepository.ObterTodasAsync();
         }
 
-        public Venda? ObterVendaPorId(Guid vendaId)
+        public async Task<Venda> ObterVendaPorId(Guid vendaId)
         {
-            return _vendaRepository.ObterPorId(vendaId);
+            return await _vendaRepository.ObterPorIdAsync(vendaId);
         }
     }
 }
