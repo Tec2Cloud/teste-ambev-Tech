@@ -18,7 +18,7 @@ namespace Ioc
             if(string.IsNullOrEmpty(defaultConnection))
                 throw new ArgumentNullException(nameof(defaultConnection));
 
-            services.AddDbContext<VendasDbContext>(options => options.UseSqlite(defaultConnection, b => b.MigrationsAssembly("ConwayGameOfLife.Infra.Data")));
+            services.AddDbContext<VendasDbContext>(options => options.UseSqlite(defaultConnection, b => b.MigrationsAssembly("Data")));
 
             services.AddScoped<IVendaService, VendaService>();
             services.AddScoped<IVendaRepository, VendaRepository>();

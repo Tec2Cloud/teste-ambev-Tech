@@ -8,6 +8,5 @@ namespace Data.Interfaces
         Task AtualizarAsync(Venda venda);
         Task<Venda> ObterPorIdAsync(Guid id);
         Task<IEnumerable<Venda>> ObterTodasAsync();
-        Task CancelarAsync(Venda venda);
     }
 }

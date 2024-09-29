@@ -38,10 +38,5 @@ namespace Data.Repositories
             await Context.SaveChangesAsync();
         }
 
-        public async Task CancelarAsync(Venda venda)
-        {
-            Vendas.Remove(venda);
-            await Context.SaveChangesAsync();
-        }
     }
 }
