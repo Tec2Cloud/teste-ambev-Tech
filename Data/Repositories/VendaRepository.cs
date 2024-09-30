@@ -37,6 +37,5 @@ namespace Data.Repositories
             Vendas.Update(venda);
             await Context.SaveChangesAsync();
         }
-
     }
 }

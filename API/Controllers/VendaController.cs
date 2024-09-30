@@ -24,78 +24,56 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<RegistrarVendaDto>> RegistrarVenda([FromBody] RegistrarVendaDto registrarVendaDto)
         {
-            try
-            {
-                var itens = registrarVendaDto.Itens.ToItemVendaList();
+            var itens = registrarVendaDto.Itens.ToItemVendaList();
 
-                var venda = await _vendaService.RegistrarVenda(
-                    registrarVendaDto.ClienteId,
-                    registrarVendaDto.NomeCliente,
-                    registrarVendaDto.FilialId,
-                    registrarVendaDto.NomeFilial,
-                    itens
-                );
+            var result = await _vendaService.RegistrarVenda(
+                registrarVendaDto.ClienteId,
+                registrarVendaDto.NomeCliente,
+                registrarVendaDto.FilialId,
+                registrarVendaDto.NomeFilial,
+                itens
+            );
 
-                var vendaDto = _mapper.Map<RegistrarVendaDto>(venda);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Error });
 
-                return CreatedAtAction(nameof(ObterVendaPorId), new { vendaId = venda.Id }, vendaDto);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var vendaDto = _mapper.Map<RegistrarVendaDto>(result.Value);
+
+            return CreatedAtAction(nameof(ObterVendaPorId), new { vendaId = result.Value.Id }, vendaDto);
         }
 
         [HttpPut("{vendaId}")]
         public async Task<IActionResult> AtualizarVenda(Guid vendaId, [FromBody] AtualizarVendaDto atualizarVendaDto)
         {
-            try
-            {
-                var itens = atualizarVendaDto.Itens.ToItemVendaList();
 
-                var vendaAtualizada = await _vendaService.AtualizarVenda(vendaId, itens);
+            var itens = atualizarVendaDto.Itens.ToItemVendaList();
 
-                return Ok(vendaAtualizada);
-            }
-            catch (Exception ex)
+            var result = await _vendaService.AtualizarVenda(vendaId, itens);
+
+            if (!result.IsSuccess)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = result.Error });
             }
+
+            return Ok(result.Value);
         }
 
         [HttpGet("{vendaId}")]
         public async Task<IActionResult> ObterVendaPorId(Guid vendaId)
         {
-            try
-            {
-                var venda = await _vendaService.ObterVendaPorId(vendaId);
+            var venda = await _vendaService.ObterVendaPorId(vendaId);
 
-                if (venda == null)
-                {
-                    return NotFound(new { message = "Venda não encontrada." });
-                }
+            if (venda == null)
+                return NotFound(new { message = "Venda não encontrada." });
 
-                return Ok(venda);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(venda);
         }
 
         [HttpPut("{vendaId}/cancelar")]
         public async Task<IActionResult> CancelarVenda(Guid vendaId)
         {
-            try
-            {
-                await _vendaService.CancelarVenda(vendaId);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            await _vendaService.CancelarVenda(vendaId);
+            return NoContent();
         }
     }
 }
