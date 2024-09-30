@@ -8,7 +8,9 @@ namespace API.Profiles
     {
         public VendaProfile()
         {
-            CreateMap<Venda, RegistrarVendaDto>();
+            CreateMap<Venda, RegistrarVendaDto>()
+           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+            CreateMap<ItemVenda, ItemVendaDto>(); 
         }
     }
 }

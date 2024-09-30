@@ -17,12 +17,14 @@ namespace Data.Repositories
         }
         public async Task<Venda> ObterPorIdAsync(Guid id)
         {
-            return await Vendas.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
+            return await Vendas.AsNoTracking()
+                .Include(v => v.Itens)
+                .FirstOrDefaultAsync(v => v.Id == id);
         }
 
         public async Task<IEnumerable<Venda>> ObterTodasAsync()
         {
-            return await Vendas.AsNoTracking().ToListAsync();
+            return await Vendas.AsNoTracking().Include(v => v.Itens).ToListAsync();
         }
 
         public async Task<Guid> RegistrarAsync(Venda venda)
