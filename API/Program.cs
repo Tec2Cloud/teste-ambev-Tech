@@ -1,3 +1,6 @@
+using API.Middlewares;
+using API.Profiles;
+using Ioc;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +12,9 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+builder.Services.ResolveDependencies(builder.Configuration);
+builder.Services.AddTransient<ErrorHandlerMiddleware>();
+builder.Services.AddAutoMapper(typeof(VendaProfile));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -16,7 +22,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -28,6 +33,9 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
+
 
 try
 {

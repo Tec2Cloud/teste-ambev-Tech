@@ -22,4 +22,9 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Business\Business.csproj" />
+	  <ProjectReference Include="..\Ioc\Ioc.csproj" />
+	</ItemGroup>
+
 </Project>
