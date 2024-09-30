@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Business.Events;
 using Business.Interfaces;
 using Business.Services;
 using Data.Interfaces;
@@ -11,13 +12,15 @@ public class VendaServiceTest
 {
     private readonly IVendaRepository _vendaRepositoryMock;
     private readonly IVendaService _vendaService;
+    private readonly IEventPublisher _eventPublisherMock; 
     private readonly Faker<Venda> _vendaFaker;
     private readonly Faker<ItemVenda> _itemVendaFaker;
 
     public VendaServiceTest()
     {
         _vendaRepositoryMock = Substitute.For<IVendaRepository>();
-        _vendaService = new VendaService(_vendaRepositoryMock);
+        _eventPublisherMock = Substitute.For<IEventPublisher>();
+        _vendaService = new VendaService(_vendaRepositoryMock, _eventPublisherMock);
 
         _itemVendaFaker = new Faker<ItemVenda>()
             .CustomInstantiator(f => new ItemVenda(
@@ -38,7 +41,7 @@ public class VendaServiceTest
     }
 
     [Fact]
-    public async Task GivenValidVendaData_WhenRegistrarVendaIsCalled_ThenItShouldReturnSuccess()
+    public async Task GivenValidVendaData_WhenRegistrarVendaIsCalled_ThenItShouldPublishVendaRegistradaEvent()
     {
         var clienteId = Guid.NewGuid();
         var filialId = Guid.NewGuid();
@@ -50,24 +53,27 @@ public class VendaServiceTest
 
         result.IsSuccess.Should().BeTrue();
         await _vendaRepositoryMock.Received(1).RegistrarAsync(Arg.Any<Venda>());
+        _eventPublisherMock.Received(1).Publish("VendaRegistrada", Arg.Is<VendaRegistradaEvent>(e =>
+            e.VendaId == result.Value.Id && e.Cliente == "Cliente1"));
     }
 
     [Fact]
-    public async Task GivenVendaDoesNotExist_WhenAtualizarVendaIsCalled_ThenItShouldReturnFailure()
+    public async Task GivenValidVendaData_WhenAtualizarVendaIsCalled_ThenItShouldPublishVendaAlteradaEvent()
     {
-        var vendaId = Guid.NewGuid();
+        var venda = _vendaFaker.Generate();
         var novosItens = _itemVendaFaker.Generate(2);
 
-        _vendaRepositoryMock.ObterPorIdAsync(vendaId).Returns((Venda)null);
+        _vendaRepositoryMock.ObterPorIdAsync(venda.Id).Returns(venda);
 
-        var result = await _vendaService.AtualizarVenda(vendaId, novosItens);
+        var result = await _vendaService.AtualizarVenda(venda.Id, novosItens);
 
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("Venda não encontrada.");
+        result.IsSuccess.Should().BeTrue();
+        await _vendaRepositoryMock.Received(1).AtualizarAsync(venda);
+        _eventPublisherMock.Received(1).Publish("VendaAlterada", Arg.Is<VendaAlteradaEvent>(e =>
+            e.VendaId == venda.Id));
     }
-
     [Fact]
-    public async Task GivenVendaExists_WhenCancelarVendaIsCalled_ThenItShouldReturnSuccess()
+    public async Task GivenVendaExists_WhenCancelarVendaIsCalled_ThenItShouldPublishVendaCanceladaEvent()
     {
         var venda = _vendaFaker.Generate();
         _vendaRepositoryMock.ObterPorIdAsync(venda.Id).Returns(venda);
@@ -76,7 +82,10 @@ public class VendaServiceTest
 
         result.IsSuccess.Should().BeTrue();
         await _vendaRepositoryMock.Received(1).AtualizarAsync(venda);
+        _eventPublisherMock.Received(1).Publish("VendaCancelada", Arg.Is<VendaCanceladaEvent>(e =>
+            e.VendaId == venda.Id));
     }
+
 
     [Fact]
     public async Task GivenVendasExist_WhenObterTodasVendasIsCalled_ThenItShouldReturnAllVend()

@@ -1,4 +1,5 @@
-﻿using Business.Interfaces;
+﻿using Business.Events;
+using Business.Interfaces;
 using Business.Services;
 using Data.Context;
 using Data.Interfaces;
@@ -21,6 +22,7 @@ namespace Ioc
             services.AddDbContext<VendasDbContext>(options => options.UseSqlite(defaultConnection, b => b.MigrationsAssembly("Data")));
 
             services.AddScoped<IVendaService, VendaService>();
+            services.AddScoped<IEventPublisher, EventPublisher>();
             services.AddScoped<IVendaRepository, VendaRepository>();
 
             return services;

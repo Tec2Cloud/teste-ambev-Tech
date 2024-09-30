@@ -1,4 +1,5 @@
 ﻿using Business.Common;
+using Business.Events;
 using Business.Interfaces;
 using Data.Interfaces;
 using Domain.Entities;
@@ -8,10 +9,13 @@ namespace Business.Services
     public class VendaService : IVendaService
     {
         private readonly IVendaRepository _vendaRepository;
+        private readonly IEventPublisher _eventPublisher;
 
-        public VendaService(IVendaRepository vendaRepository)
+
+        public VendaService(IVendaRepository vendaRepository, IEventPublisher eventPublisher)
         {
             _vendaRepository = vendaRepository;
+            _eventPublisher = eventPublisher;
         }
 
         public async Task<Result<Venda>> RegistrarVenda(Guid clienteId, string nomeCliente, Guid filialId, string nomeFilial, List<ItemVenda> itensDto)
@@ -24,6 +28,13 @@ namespace Business.Services
             }
 
             await _vendaRepository.RegistrarAsync(venda);
+
+            PublicarEvento("VendaRegistrada", new VendaRegistradaEvent
+            {
+                VendaId = venda.Id,
+                Data = DateTime.Now,
+                Cliente = venda.NomeCliente
+            });
 
             return Result<Venda>.Success(venda);
         }
@@ -45,6 +56,12 @@ namespace Business.Services
 
             await _vendaRepository.AtualizarAsync(venda);
 
+            PublicarEvento("VendaAlterada", new VendaAlteradaEvent
+            {
+                VendaId = venda.Id,
+                Data = DateTime.Now
+            });
+
             return Result<Venda>.Success(venda);
         }
 
@@ -58,6 +75,12 @@ namespace Business.Services
 
             await _vendaRepository.AtualizarAsync(venda);
 
+            PublicarEvento("VendaCancelada", new VendaCanceladaEvent
+            {
+                VendaId = venda.Id,
+                Data = DateTime.Now
+            });
+
             return Result.Success();
         }
 
@@ -69,6 +92,11 @@ namespace Business.Services
         public async Task<Venda> ObterVendaPorId(Guid vendaId)
         {
             return await _vendaRepository.ObterPorIdAsync(vendaId);
+        }
+
+        private void PublicarEvento(string nomeEvento, object evento)
+        {
+            _eventPublisher.Publish(nomeEvento, evento);
         }
     }
 }
